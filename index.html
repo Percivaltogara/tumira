@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tumira Remittance Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+  Tumira — design notes
+  Subject: Zimbabweans abroad sending money home. The one thing that matters is
+  how many US dollars arrive, so the calculator is the hero and the received
+  amount is the loudest element on the page.
+  Palette: msasa-forest green carries the brand; a single gold (from the flag)
+  marks the best option only. Everything else is quiet.
+*/
+:root {
+  --forest: #0a4f33;
+  --forest-2: #0d6440;
+  --leaf: #1f9d5c;
+  --mint: #e3f3ea;
+  --mint-2: #c9e8d6;
+  --paper: #f7faf7;
+  --surface: #ffffff;
+  --ink: #12261b;
+  --muted: #56695d;
+  --line: #dbe6de;
+  --gold: #e8b23a;
+  --gold-ink: #6b4a00;
+  --gold-soft: #fbf1d6;
+  --warn: #8a5a00;
+  --warn-soft: #fbf0d9;
+  --low: #8a3b2e;
+  --low-soft: #f8e6e2;
+  --on-forest: #f2fbf5;
+  --on-forest-muted: #b5d9c4;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r-lg: 22px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --forest: #0b3a27;
+    --forest-2: #0f4a32;
+    --leaf: #4cc485;
+    --mint: #163627;
+    --mint-2: #1f4a35;
+    --paper: #0e1913;
+    --surface: #15231b;
+    --ink: #e8f3ec;
+    --muted: #9db3a5;
+    --line: #253a2e;
+    --gold: #f0c35a;
+    --gold-ink: #f0c35a;
+    --gold-soft: #3a3019;
+    --warn: #e7b04a;
+    --warn-soft: #3a2f17;
+    --low: #f0a091;
+    --low-soft: #3b2420;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- Hero ---------- */
+.hero {
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(31,157,92,.45) 0%, rgba(31,157,92,0) 60%),
+    var(--forest);
+  color: var(--on-forest);
+  padding: 22px 16px 120px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  /* a soft field of concentric arcs, like ripples travelling outward: money going home */
+  content: "";
+  position: absolute; right: -180px; top: -180px; width: 520px; height: 520px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, rgba(255,255,255,.06) 0 1px, transparent 1px 34px);
+  pointer-events: none;
+}
+.hero-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wordmark {
+  font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.02em;
+  display: inline-flex; align-items: center; gap: 10px; color: var(--on-forest);
+}
+.wordmark svg { width: 30px; height: 30px; }
+.tag-proto {
+  font-size: 13px; font-weight: 600; color: var(--forest);
+  background: var(--gold); border-radius: 999px; padding: 4px 11px;
+}
+.hero h1 {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(32px, 7.4vw, 54px); line-height: 1.02; letter-spacing: -0.025em;
+  margin: 36px 0 12px; max-width: 15ch; text-wrap: balance;
+}
+.hero .lede { margin: 0; color: var(--on-forest-muted); font-size: 17px; max-width: 46ch; }
+
+/* ---------- Calculator ---------- */
+.calc-wrap { max-width: 760px; margin: -96px auto 0; padding: 0 16px; position: relative; z-index: 2; }
+.calc {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: 0 1px 0 rgba(10,79,51,.06), 0 24px 48px -24px rgba(10,79,51,.35);
+  overflow: hidden;
+}
+.calc-body { padding: 20px 20px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.calc-body > div { min-width: 0; }
+.lbl { font-size: 14px; font-weight: 600; color: var(--muted); margin: 0 0 8px; display: block; }
+
+.corridors { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 2px 20px 4px; }
+.corridors::-webkit-scrollbar { display: none; }
+.cor {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 7px 14px 7px 7px; cursor: pointer; font-weight: 600; font-size: 15px; white-space: nowrap;
+}
+.cor .sym {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--mint); color: var(--forest-2); font-size: 13px; font-weight: 700;
+}
+.cor[aria-pressed="true"] { border-color: var(--forest-2); background: var(--forest-2); color: #fff; }
+.cor[aria-pressed="true"] .sym { background: rgba(255,255,255,.18); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  .cor .sym { color: var(--leaf); }
+  .cor[aria-pressed="true"] { background: var(--leaf); border-color: var(--leaf); color: #06140d; }
+  .cor[aria-pressed="true"] .sym { background: rgba(0,0,0,.15); color: #06140d; }
+}
+
+.amount {
+  display: flex; align-items: baseline; gap: 6px;
+  border-bottom: 2px solid var(--line); padding: 2px 0 8px;
+}
+.amount:focus-within { border-color: var(--leaf); }
+.amount .cur { font-family: var(--display); font-weight: 700; font-size: 40px; color: var(--muted); }
+.amount input {
+  border: 0; background: transparent; outline: none; width: 100%; min-width: 0;
+  font-family: var(--display); font-weight: 700; font-size: 48px; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; padding: 0;
+}
+.amount input::-webkit-outer-spin-button, .amount input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amount input[type=number] { -moz-appearance: textfield; }
+.amount .code { font-weight: 600; color: var(--muted); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.quick button {
+  border: 0; background: var(--mint); color: var(--forest-2); font-weight: 600; font-size: 14px;
+  border-radius: 8px; padding: 6px 11px; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.quick button[aria-pressed="true"] { background: var(--forest-2); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  .quick button { color: var(--leaf); }
+  .quick button[aria-pressed="true"] { background: var(--leaf); color: #06140d; }
+}
+
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
+.seg button {
+  border: 0; background: transparent; border-radius: 9px; padding: 9px 4px; cursor: pointer;
+  font-weight: 600; font-size: 14px; color: var(--muted); line-height: 1.2;
+}
+.seg button small { display: block; font-weight: 500; font-size: 12px; opacity: .8; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(10,79,51,.18); }
+
+/* The receipt: the signature moment */
+.receipt {
+  background: var(--mint);
+  padding: 18px 20px 20px;
+  border-top: 1px dashed var(--mint-2);
+  position: relative;
+}
+.receipt::before, .receipt::after {
+  /* ticket notches */
+  content: ""; position: absolute; top: -11px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--paper);
+}
+.receipt::before { left: -11px; }
+.receipt::after { right: -11px; }
+.receipt .k { font-size: 15px; font-weight: 600; color: var(--forest-2); margin: 0; }
+@media (prefers-color-scheme: dark) { .receipt .k { color: var(--leaf); } }
+.receipt .big {
+  font-family: var(--display); font-weight: 800; letter-spacing: -0.03em;
+  font-size: clamp(48px, 13vw, 76px); line-height: 1; margin: 6px 0 8px;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.receipt .big .usd-code { font-size: .38em; font-weight: 700; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+.receipt .via { font-size: 16px; margin: 0; }
+.receipt .via b { font-weight: 700; }
+.receipt .sub { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+.saving {
+  display: inline-block; margin-top: 12px; background: var(--gold-soft); color: var(--gold-ink);
+  font-weight: 600; font-size: 14px; border-radius: 8px; padding: 6px 10px;
+}
+.est-toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); cursor: pointer; margin-top: 14px; }
+.est-toggle input { width: 18px; height: 18px; accent-color: var(--forest-2); margin: 0; }
+
+/* ---------- Results ---------- */
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 36px; }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -0.015em; margin: 0; }
+.sec-h p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.list { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.offer {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  overflow: hidden;
+}
+.offer.best { border: 2px solid var(--leaf); }
+.offer-main { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: center; padding: 14px 16px; }
+.mono {
+  width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--mint); color: var(--forest-2); font-family: var(--display); font-weight: 800; font-size: 17px;
+  grid-row: span 2;
+}
+@media (prefers-color-scheme: dark) { .mono { color: var(--leaf); } }
+.offer .name { font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.badge-best { font-size: 12px; font-weight: 700; background: var(--gold); color: #3b2a00; border-radius: 6px; padding: 2px 7px; }
+.offer .how { color: var(--muted); font-size: 14px; grid-column: 2; }
+.offer .gets { text-align: right; grid-row: span 2; grid-column: 3; grid-row-start: 1; }
+.offer .gets .usd { font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.05; }
+.offer.best .gets .usd { color: var(--forest-2); }
+@media (prefers-color-scheme: dark) { .offer.best .gets .usd { color: var(--leaf); } }
+.offer .gets .delta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.costline { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 0 16px 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--paper); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; background: var(--leaf); border-radius: 999px; }
+.offer:not(.best) .bar i { background: var(--muted); opacity: .55; }
+
+.offer details { border-top: 1px solid var(--line); }
+.offer summary {
+  list-style: none; cursor: pointer; padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--forest-2);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+@media (prefers-color-scheme: dark) { .offer summary { color: var(--leaf); } }
+.offer summary::-webkit-details-marker { display: none; }
+.offer summary .chev { transition: transform .2s; }
+.offer details[open] summary .chev { transform: rotate(180deg); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px 16px; padding: 4px 16px 4px; margin: 0; }
+.facts div { display: grid; gap: 1px; }
+.facts dt { font-size: 12px; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 15px; }
+.offer .note { padding: 10px 16px 0; margin: 0; font-size: 14px; color: var(--muted); max-width: 64ch; }
+.offer-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px 14px; }
+.pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; }
+.pill.high { background: var(--mint); color: var(--forest-2); }
+.pill.medium { background: var(--warn-soft); color: var(--warn); }
+.pill.low { background: var(--low-soft); color: var(--low); }
+@media (prefers-color-scheme: dark) { .pill.high { color: var(--leaf); } }
+.cta {
+  display: inline-block; text-decoration: none; font-weight: 700; font-size: 14px;
+  background: var(--forest-2); color: #fff; border-radius: 10px; padding: 9px 14px;
+}
+.cta:hover { background: var(--forest); }
+@media (prefers-color-scheme: dark) { .cta { background: var(--leaf); color: #06140d; } .cta:hover { background: #6fd39f; } }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--r-md); padding: 18px; color: var(--muted); margin: 0; }
+.limit-note { font-size: 14px; color: var(--muted); margin: 4px 2px 0; }
+
+.others { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.others li { border: 1px dashed var(--mint-2); border-radius: var(--r-md); padding: 12px 14px; font-size: 14px; color: var(--muted); }
+.others li b { display: block; color: var(--ink); font-size: 15px; margin-bottom: 2px; }
+
+/* ---------- Method ---------- */
+.method { background: var(--forest); color: var(--on-forest); border-radius: var(--r-lg); padding: 24px 22px; display: grid; gap: 14px; }
+.method h2 { color: var(--on-forest); }
+.method p, .method li { color: var(--on-forest-muted); font-size: 15px; max-width: 62ch; margin: 0; }
+.method ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.method b { color: var(--on-forest); }
+.formula {
+  font-family: var(--display); font-weight: 600; font-size: 17px; color: var(--on-forest);
+  background: rgba(255,255,255,.07); border-radius: var(--r-sm); padding: 12px 14px;
+}
+.method details summary { cursor: pointer; font-weight: 600; color: var(--on-forest); }
+.method details p { margin-top: 8px; font-size: 14px; }
+.method a { color: var(--gold); }
+.promises { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.promises div { background: rgba(255,255,255,.06); border-radius: var(--r-sm); padding: 12px 14px; font-size: 14px; color: var(--on-forest-muted); }
+.promises b { display: block; color: var(--on-forest); font-size: 15px; margin-bottom: 2px; }
+
+footer { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; display: grid; gap: 6px; }
+footer .wm { font-family: var(--display); font-weight: 800; color: var(--forest-2); font-size: 18px; }
+@media (prefers-color-scheme: dark) { footer .wm { color: var(--leaf); } }
+
+@media (min-width: 640px) {
+  .hero { padding: 28px 24px 132px; }
+  .calc-body { padding: 26px 28px 22px; }
+  .receipt { padding: 22px 28px 24px; }
+  .corridors { margin: 0; padding: 2px 0 4px; flex-wrap: wrap; overflow: visible; }
+}
+@media (max-width: 420px) {
+  .seg button { font-size: 13px; }
+  .offer .gets .usd { font-size: 22px; }
+  .amount input { font-size: 42px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="topbar">
+      <span class="wordmark" aria-label="Tumira">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#e8b23a"/><path d="M9 21.5 21.5 9M13 9h8.5v8.5" fill="none" stroke="#0a4f33" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tumira
+      </span>
+      <span class="tag-proto">Prototype</span>
+    </div>
+    <h1>See exactly what reaches home.</h1>
+    <p class="lede">Compare money transfer providers by the US dollars your family receives in Zimbabwe, after every fee and exchange-rate margin.</p>
+  </div>
+</header>
+
+<div class="calc-wrap">
+  <section class="calc" aria-label="Transfer calculator">
+    <div class="calc-body">
+      <div>
+        <span class="lbl" id="cor-lbl">Sending from</span>
+        <div class="corridors" id="corridors" role="group" aria-labelledby="cor-lbl"></div>
+      </div>
+      <div>
+        <label class="lbl" for="amount">You send, including fees</label>
+        <div class="amount">
+          <span class="cur" id="cur-symbol">£</span>
+          <input id="amount" type="number" inputmode="decimal" min="1" step="1" value="200">
+          <span class="code" id="cur-code">GBP</span>
+        </div>
+        <div class="quick" id="chips" role="group" aria-label="Quick amounts"></div>
+      </div>
+      <div>
+        <span class="lbl" id="pay-lbl">Your family receives it by</span>
+        <div class="seg" id="payout" role="group" aria-labelledby="pay-lbl">
+          <button type="button" data-v="all" aria-pressed="true">Any<small>method</small></button>
+          <button type="button" data-v="wallet" aria-pressed="false">Wallet<small>EcoCash etc.</small></button>
+          <button type="button" data-v="cash" aria-pressed="false">Cash<small>USD pickup</small></button>
+          <button type="button" data-v="bank" aria-pressed="false">Bank<small>deposit</small></button>
+        </div>
+      </div>
+    </div>
+    <div class="receipt" id="summary" aria-live="polite"></div>
+  </section>
+</div>
+
+<main>
+  <section aria-labelledby="ranked-h">
+    <div class="sec-h">
+      <h2 id="ranked-h">All options, best first</h2>
+      <p id="ranked-count"></p>
+    </div>
+    <ol class="list" id="results"></ol>
+    <div id="limits"></div>
+  </section>
+
+  <section aria-labelledby="others-h" id="others-sec">
+    <div class="sec-h">
+      <h2 id="others-h">Also sending to Zimbabwe</h2>
+    </div>
+    <p style="margin:-6px 0 14px;color:var(--muted);font-size:14px">We have no reliable price for these yet, so they are not ranked.</p>
+    <ul class="others" id="unpriced"></ul>
+  </section>
+
+  <section class="method" aria-labelledby="method-h">
+    <h2 id="method-h">How we rank</h2>
+    <p>Providers are ranked only by the US dollars that arrive. We start from the mid-market rate, take off the fee, then apply each provider's exchange-rate margin.</p>
+    <div class="formula">Received = (amount − fee) × mid-market rate × (1 − margin)</div>
+    <p id="midrates"></p>
+    <div class="promises">
+      <div><b>No paid rankings</b>Order is set by what your family receives, never by who pays us.</div>
+      <div><b>Confidence on every price</b>Each result says whether it was measured, published or estimated.</div>
+      <div><b>One-off promos left out</b>Free first transfers apply once, so we don't let them distort the ranking.</div>
+    </div>
+    <ul>
+      <li><b>High confidence:</b> the fee is published and the margin was measured in a recent quote or the World Bank's price survey.</li>
+      <li><b>Medium:</b> the fee is published; the margin comes from independent reviews, which give a range.</li>
+      <li><b>Low:</b> fee and margin are both estimated from review ranges. Hidden unless you include estimates.</li>
+    </ul>
+    <details>
+      <summary>Sources</summary>
+      <p>Provider pages for <a href="https://www.mukuru.com/en-uk/campaign/send-money-to-zimbabwe-for-free/">Mukuru</a>, <a href="https://www.remitly.com/gb/en/zimbabwe/pricing">Remitly</a> and <a href="https://www.mamamoney.co.za/faqs/zimbabwe-2">Mama Money</a>; the <a href="https://remittanceprices.worldbank.org/corridor/South-Africa/Zimbabwe">World Bank Remittance Prices Worldwide</a> survey; quotes and reviews from <a href="https://exiap.co.uk/international-money-transfers/send-money-to-zimbabwe">Exiap</a>, <a href="https://www.currencyexpert.com/reviews/mukuru/">Currency Expert</a>, <a href="https://transferfees.io/worldremit-fee-calculator/">TransferFees</a> and <a href="https://moneytransfers.com/en-za/guides/fastest-way-to-transfer-money-internationally-from-south-africa">MoneyTransfers.com</a>; mid-market rates from <a href="https://tradingeconomics.com/united-kingdom/currency">Trading Economics</a>, the <a href="https://www.ecb.europa.eu/stats/shared/pdf/eurofxref.pdf">ECB</a> and <a href="https://www.mtfxgroup.com/tools/historical-currency-exchange-rates/">MTFX</a>.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <span class="wm">Tumira</span>
+  <span>Prices are indicative as at 4 November 2026. Always confirm the final quote with the provider before you send.</span>
+</footer>
+
+<script>
+// Mid-market rates: USD received per 1 unit of the sending currency, 3–4 Nov 2026.
+const CORRIDORS = {
+  GBP: { label: "UK", symbol: "£", mid: 1.3473, chips: [50, 100, 200, 500, 1000], def: 200, src: "Trading Economics, 4 Nov 2026" },
+  ZAR: { label: "South Africa", symbol: "R", mid: 1 / 16.62, chips: [500, 1000, 2000, 5000, 10000], def: 2000, src: "Trading Economics, 4 Nov 2026 (USD/ZAR 16.62)" },
+  USD: { label: "USA", symbol: "$", mid: 1, chips: [50, 100, 200, 500, 1000], def: 200, src: "USD to USD, no conversion" },
+  AUD: { label: "Australia", symbol: "A$", mid: 0.7002, chips: [100, 200, 500, 1000, 2000], def: 300, src: "Trading Economics, 4 Nov 2026" },
+  CAD: { label: "Canada", symbol: "C$", mid: 1 / 1.3994, chips: [100, 200, 500, 1000, 2000], def: 300, src: "MTFX, 2 Nov 2026 (USD/CAD 1.3994)" },
+  EUR: { label: "Eurozone", symbol: "€", mid: 1.1179, chips: [50, 100, 200, 500, 1000], def: 200, src: "ECB reference rate, 3 Nov 2026" }
+};
+
+const PAYOUT_LABEL = { wallet: "Mobile wallet", cash: "Cash pickup", bank: "Bank deposit" };
+
+const flat = v => () => v;
+const PROVIDERS = [
+  // United Kingdom
+  { c: "GBP", name: "Mukuru", payout: "wallet", detail: "Mukuru Wallet", fee: flat(0), margin: 0.014, conf: "medium", speed: "Minutes",
+    note: "No fee to a Mukuru Wallet (provider promotion). Margin from Currency Expert's review range of 1.4–3%.", url: "https://www.mukuru.com/en-uk/send-money/zimbabwe/" },
+  { c: "GBP", name: "Mukuru", payout: "cash", detail: "Mukuru booths and branches", fee: flat(0.99), margin: 0.03, conf: "medium", speed: "Minutes",
+    note: "Fee from about £0.99. Reviewers report the cash route has the widest margin, around 3%.", url: "https://www.mukuru.com/en-uk/send-money/zimbabwe/" },
+  { c: "GBP", name: "WorldRemit", payout: "bank", detail: "Zimbabwean bank account", fee: flat(0.99), margin: 0.013, conf: "medium", speed: "Same or next day",
+    note: "£0.99 bank fee. Margin of 1.28% measured on a large quote; smaller sends may get a wider margin.", url: "https://www.worldremit.com/" },
+  { c: "GBP", name: "WorldRemit", payout: "cash", detail: "Mukuru or Hello Paisa pickup", fee: flat(1.99), margin: 0.02, conf: "medium", speed: "About an hour",
+    note: "£1.99 cash pickup fee. Margin estimated from reported range of 0.8–3%.", url: "https://www.worldremit.com/" },
+  { c: "GBP", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(1.99), margin: 0.02, conf: "low", speed: "Minutes",
+    note: "Fee and margin estimated from review ranges.", url: "https://www.worldremit.com/" },
+  { c: "GBP", name: "Remitly", payout: "wallet", detail: "EcoCash or Mukuru Wallet", fee: flat(0.99), margin: 0.029, conf: "medium", speed: "Minutes",
+    note: "£0.99 published fee. Margin of 2.93% measured on an Exiap quote. First transfer is fee-free with a promo rate.", url: "https://www.remitly.com/gb/en/zimbabwe" },
+  { c: "GBP", name: "Remitly", payout: "cash", detail: "Mukuru or HelloPaisa pickup", fee: flat(1.99), margin: 0.029, conf: "medium", speed: "Minutes",
+    note: "£1.99 published cash pickup fee. Margin as measured for Remitly above.", url: "https://www.remitly.com/gb/en/zimbabwe" },
+  { c: "GBP", name: "Remitly", payout: "bank", detail: "Zimbabwean bank account", fee: flat(0.99), margin: 0.029, conf: "medium", speed: "1–2 days",
+    note: "£0.99 published bank deposit fee.", url: "https://www.remitly.com/gb/en/zimbabwe" },
+
+  // South Africa
+  { c: "ZAR", name: "Mama Money", payout: "wallet", detail: "EcoCash, InnBucks or O'mari", fee: a => Math.min(a * 0.05, 250), margin: 0.0195, conf: "high", speed: "Minutes",
+    note: "Published fee: 5% (R50 on R1,000), capped at R250 from R5,000. Margin 1.95% from the World Bank survey.", url: "https://www.mamamoney.co.za/send-money/zimbabwe" },
+  { c: "ZAR", name: "Mama Money", payout: "cash", detail: "Cashout token at banks and EcoCash agents", fee: a => Math.min(a * 0.05, 250), margin: 0.0271, conf: "high", speed: "Minutes",
+    note: "Same published fee. Margin 2.71% on the cash route from the World Bank survey.", url: "https://www.mamamoney.co.za/send-money/zimbabwe" },
+  { c: "ZAR", name: "Sasai Money Transfer", payout: "wallet", detail: "EcoCash, free cash-out", fee: flat(0), margin: 0.0541, conf: "high", speed: "Minutes",
+    note: "No fee; the cost sits in a 5.41% margin (World Bank survey).", url: "https://www.cassavaremit.com/" },
+  { c: "ZAR", name: "Mukuru", payout: "cash", detail: "Mukuru booths, guaranteed USD", fee: a => a * 0.0993, margin: 0.0035, conf: "medium", speed: "Same day",
+    note: "World Bank survey at about US$200: fee 9.9% of the amount, margin 0.35%. Mukuru's fee varies by amount, so check your exact quote.", url: "https://www.mukuru.com/zw/send-money/zimbabwe/" },
+  { c: "ZAR", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(50), margin: 0.02, conf: "low", speed: "Minutes", max: 4999,
+    note: "Fee estimated from the US$1.99–2.99 range; margin from 0.8–3%. Card-funded, maximum R4,999 per transfer.", url: "https://www.worldremit.com/" },
+
+  // United States (USD to USD, so no exchange margin)
+  { c: "USD", name: "WorldRemit", payout: "bank", detail: "Zimbabwean bank account", fee: flat(1.99), margin: 0, conf: "medium", speed: "Same or next day",
+    note: "About $1.99 for a bank deposit. USD is paid out as USD, so we assume no exchange margin.", url: "https://www.worldremit.com/" },
+  { c: "USD", name: "WorldRemit", payout: "cash", detail: "Mukuru or Hello Paisa pickup", fee: flat(2.99), margin: 0, conf: "medium", speed: "About an hour",
+    note: "About $2.99 for cash pickup.", url: "https://www.worldremit.com/" },
+  { c: "USD", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(2.99), margin: 0, conf: "low", speed: "Minutes",
+    note: "Fee estimated from the $1.99–2.99 mobile money range.", url: "https://www.worldremit.com/" },
+
+  // Australia, Canada, Eurozone: estimates only for now
+  { c: "AUD", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(3.99), margin: 0.02, conf: "low", speed: "Minutes",
+    note: "Fee and margin estimated from WorldRemit's published ranges. Not yet checked for this corridor.", url: "https://www.worldremit.com/" },
+  { c: "AUD", name: "WorldRemit", payout: "cash", detail: "Mukuru or Hello Paisa pickup", fee: flat(3.99), margin: 0.025, conf: "low", speed: "About an hour",
+    note: "Estimate. Cash pickup usually carries a wider margin than wallets.", url: "https://www.worldremit.com/" },
+  { c: "CAD", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(3.99), margin: 0.02, conf: "low", speed: "Minutes",
+    note: "Fee and margin estimated from WorldRemit's published ranges. Not yet checked for this corridor.", url: "https://www.worldremit.com/" },
+  { c: "CAD", name: "WorldRemit", payout: "cash", detail: "Mukuru or Hello Paisa pickup", fee: flat(3.99), margin: 0.025, conf: "low", speed: "About an hour",
+    note: "Estimate.", url: "https://www.worldremit.com/" },
+  { c: "EUR", name: "WorldRemit", payout: "wallet", detail: "EcoCash", fee: flat(1.99), margin: 0.02, conf: "low", speed: "Minutes",
+    note: "Fee and margin estimated from WorldRemit's published ranges. Not yet checked for this corridor.", url: "https://www.worldremit.com/" },
+  { c: "EUR", name: "WorldRemit", payout: "cash", detail: "Mukuru or Hello Paisa pickup", fee: flat(2.99), margin: 0.025, conf: "low", speed: "About an hour",
+    note: "Estimate.", url: "https://www.worldremit.com/" }
+];
+
+const UNPRICED = {
+  GBP: [
+    ["Sasai / Cassava Remit", "EcoCash. No transfer fee on UK sends; margin not yet verified."],
+    ["Hello Paisa", "Cash pickup at First Capital Bank and partner branches."],
+    ["Access Forex", "300+ collection points across Zimbabwe."]
+  ],
+  ZAR: [
+    ["Hello Paisa", "Cash pickup. Advertises R5 per R100 sent (5%); margin not yet verified."],
+    ["Access Forex", "300+ collection points across Zimbabwe."],
+    ["InnBucks Direct", "New app (2026) sending straight to InnBucks wallets."]
+  ],
+  USD: [["Remitly", "EcoCash, Mukuru and HelloPaisa pickup. US pricing not yet collected."]],
+  AUD: [["Remitly", "EcoCash and cash pickup. Pricing not yet collected."]],
+  CAD: [["Remitly", "EcoCash and cash pickup. Pricing not yet collected."]],
+  EUR: [["Remitly", "EcoCash and cash pickup. Pricing not yet collected."]]
+};
+
+const $ = id => document.getElementById(id);
+const usd = v => "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const state = { c: "GBP", amount: 200, payout: "all", est: false };
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function money(cur, v) {
+  const s = CORRIDORS[cur].symbol;
+  const digits = v % 1 === 0 ? 0 : 2;
+  return s + v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: 2 });
+}
+function initials(n) { return n.split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase(); }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function quote(p, amount) {
+  const mid = CORRIDORS[p.c].mid;
+  const fee = p.fee(amount);
+  const net = Math.max(0, amount - fee);
+  const rate = mid * (1 - p.margin);
+  const gets = net * rate;
+  const ideal = amount * mid;
+  const costPct = ideal > 0 ? (1 - gets / ideal) * 100 : 0;
+  return { fee, rate, gets, costPct, overLimit: p.max != null && amount > p.max };
+}
+
+function setup() {
+  const box = $("corridors");
+  Object.entries(CORRIDORS).forEach(([k, v]) => {
+    const b = el("button", "cor");
+    b.type = "button"; b.dataset.v = k;
+    b.appendChild(el("span", "sym", v.symbol));
+    b.append(v.label);
+    b.addEventListener("click", () => {
+      state.c = k; state.amount = CORRIDORS[k].def; $("amount").value = state.amount;
+      syncCorridors(); renderChips(); render();
+    });
+    box.appendChild(b);
+  });
+  syncCorridors();
+
+  document.querySelectorAll("#payout button").forEach(b => b.addEventListener("click", () => {
+    state.payout = b.dataset.v;
+    document.querySelectorAll("#payout button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  }));
+  $("amount").addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    state.amount = isFinite(v) && v > 0 ? v : 0;
+    syncChips(); render();
+  });
+  renderChips(); render();
+}
+function syncCorridors() {
+  document.querySelectorAll(".cor").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === state.c)));
+  $("cur-symbol").textContent = CORRIDORS[state.c].symbol;
+  $("cur-code").textContent = state.c;
+}
+function renderChips() {
+  const box = $("chips"); box.innerHTML = "";
+  CORRIDORS[state.c].chips.forEach(v => {
+    const b = el("button", null, money(state.c, v));
+    b.type = "button"; b.dataset.v = v;
+    b.addEventListener("click", () => { state.amount = v; $("amount").value = v; syncChips(); render(); });
+    box.appendChild(b);
+  });
+  syncChips();
+}
+function syncChips() {
+  document.querySelectorAll("#chips button").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === state.amount)));
+}
+
+// Count the headline number up/down to show what changed.
+let shown = 0, anim = null;
+function tweenTo(node, target) {
+  if (reduceMotion || !isFinite(shown)) { shown = target; paint(node, target); return; }
+  cancelAnimationFrame(anim);
+  const from = shown, t0 = performance.now(), dur = 420;
+  const step = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    shown = from + (target - from) * e; paint(node, shown);
+    if (k < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+function paint(node, v) { node.firstChild.nodeValue = usd(v); }
+
+function render() {
+  const cor = CORRIDORS[state.c];
+  const inCorridor = PROVIDERS.filter(p => p.c === state.c && (state.payout === "all" || p.payout === state.payout));
+  const onlyEstimates = inCorridor.length > 0 && inCorridor.every(p => p.conf === "low");
+  const useEst = state.est || onlyEstimates;
+  const hiddenEst = useEst ? 0 : inCorridor.filter(p => p.conf === "low").length;
+  const list = inCorridor.filter(p => useEst || p.conf !== "low").map(p => ({ p, q: quote(p, state.amount) }));
+  const ok = list.filter(x => !x.q.overLimit).sort((a, b) => b.q.gets - a.q.gets);
+  const over = list.filter(x => x.q.overLimit);
+  const ideal = state.amount * cor.mid;
+
+  // Receipt
+  const sum = $("summary"); sum.innerHTML = "";
+  if (!state.amount) {
+    sum.appendChild(el("p", "k", "Enter an amount"));
+    sum.appendChild(el("p", "sub", "Type how much you want to send, including fees, to see what arrives."));
+    shown = 0;
+  } else if (!ok.length) {
+    sum.appendChild(el("p", "k", "No priced options for this choice yet"));
+    sum.appendChild(el("p", "sub", "Try another way to receive, or see the other providers listed below."));
+    shown = 0;
+  } else {
+    const best = ok[0], worst = ok[ok.length - 1];
+    sum.appendChild(el("p", "k", "Your family receives up to"));
+    const big = el("div", "big"); big.appendChild(document.createTextNode(usd(shown)));
+    big.appendChild(el("span", "usd-code", "USD"));
+    sum.appendChild(big);
+    tweenTo(big, best.q.gets);
+    const via = el("p", "via"); via.append("with ");
+    via.appendChild(el("b", null, best.p.name));
+    via.append(`, ${PAYOUT_LABEL[best.p.payout].toLowerCase()} to ${best.p.detail}`);
+    sum.appendChild(via);
+    let line = `${money(state.c, state.amount)} is worth ${usd(ideal)} at the mid-market rate.`;
+    if (onlyEstimates) line += " Only rough estimates exist for this corridor so far.";
+    sum.appendChild(el("p", "sub", line));
+    const gap = best.q.gets - worst.q.gets;
+    if (ok.length > 1 && gap >= 0.01) sum.appendChild(el("span", "saving", `${usd(gap)} more than the most expensive option`));
+  }
+  if (!onlyEstimates && (hiddenEst || state.est)) {
+    const t = el("label", "est-toggle");
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = state.est;
+    cb.addEventListener("change", () => { state.est = cb.checked; render(); });
+    t.appendChild(cb);
+    t.append(state.est ? "Including rough estimates (low confidence)" : `Include ${hiddenEst} rough estimate${hiddenEst > 1 ? "s" : ""} (low confidence)`);
+    sum.appendChild(t);
+  }
+
+  // Ranked list
+  $("ranked-count").textContent = ok.length ? `${ok.length} option${ok.length > 1 ? "s" : ""}` : "";
+  const res = $("results"); res.innerHTML = "";
+  if (!ok.length && state.amount) res.appendChild(el("li", "empty", "Nothing to rank yet for this corridor and payout method."));
+  const maxCost = Math.max(8, ...ok.map(x => x.q.costPct));
+  ok.forEach((x, i) => {
+    const { p, q } = x;
+    const li = el("li", "offer" + (i === 0 ? " best" : ""));
+    const main = el("div", "offer-main");
+    main.appendChild(el("div", "mono", initials(p.name)));
+    const name = el("div", "name", p.name);
+    if (i === 0) name.appendChild(el("span", "badge-best", "Best value"));
+    main.appendChild(name);
+    const gets = el("div", "gets");
+    gets.appendChild(el("div", "usd", usd(q.gets)));
+    gets.appendChild(el("div", "delta", i === 0 ? "received" : `−${usd(ok[0].q.gets - q.gets)}`));
+    main.appendChild(gets);
+    main.appendChild(el("div", "how", `${PAYOUT_LABEL[p.payout]}, ${p.detail}`));
+    li.appendChild(main);
+
+    const cl = el("div", "costline");
+    const bar = el("div", "bar"); bar.setAttribute("aria-hidden", "true");
+    const fill = document.createElement("i"); fill.style.width = Math.max(2, (q.costPct / maxCost) * 100) + "%";
+    bar.appendChild(fill);
+    cl.append(bar, el("span", null, `Total cost ${q.costPct.toFixed(1)}%`));
+    li.appendChild(cl);
+
+    const d = document.createElement("details");
+    const s = document.createElement("summary");
+    s.append("Fees, rate and speed");
+    const chev = el("span", "chev", "▾"); chev.setAttribute("aria-hidden", "true"); s.appendChild(chev);
+    d.appendChild(s);
+    const dl = el("dl", "facts");
+    const f = (k, v) => { const w = el("div"); w.append(el("dt", null, k), el("dd", null, v)); dl.appendChild(w); };
+    f("Fee", money(state.c, Math.round(q.fee * 100) / 100));
+    f("Exchange rate", `1 ${state.c} = ${q.rate.toFixed(4)} USD`);
+    f("Margin", `${(p.margin * 100).toFixed(2)}%`);
+    f("Speed", p.speed);
+    d.appendChild(dl);
+    d.appendChild(el("p", "note", p.note));
+    li.appendChild(d);
+
+    const foot = el("div", "offer-foot");
+    foot.appendChild(el("span", "pill " + p.conf, { high: "High confidence", medium: "Medium confidence", low: "Low confidence, estimate" }[p.conf]));
+    const a = el("a", "cta", `Send with ${p.name}`); a.href = p.url; a.rel = "noopener"; a.target = "_blank";
+    foot.appendChild(a);
+    li.appendChild(foot);
+    res.appendChild(li);
+  });
+  const lim = $("limits"); lim.innerHTML = "";
+  over.forEach(x => lim.appendChild(el("p", "limit-note", `${x.p.name} (${PAYOUT_LABEL[x.p.payout].toLowerCase()}) isn't shown: it allows at most ${money(state.c, x.p.max)} per transfer.`)));
+
+  // Unpriced
+  const up = $("unpriced"); up.innerHTML = "";
+  const others = UNPRICED[state.c] || [];
+  $("others-sec").hidden = !others.length;
+  others.forEach(([n, t]) => { const li = el("li"); li.appendChild(el("b", null, n)); li.append(t); up.appendChild(li); });
+
+  $("midrates").textContent = `Mid-market rate used: 1 ${state.c} = ${cor.mid.toFixed(4)} USD (${cor.src}).`;
+}
+
+setup();
+</script>
+</body>
+</html>
